@@ -1,0 +1,31 @@
+#!/usr/bin/env python
+
+from __future__ import print_function
+
+import os
+import sys
+
+if len(sys.argv) != 3:
+    exit("Usage {0} REPO REVISION".format(sys.argv[0]))
+
+REPO_ROOT = sys.argv[1]
+REVISION = sys.argv[2]
+
+if not os.path.exists(REPO_ROOT):
+    exit("Specified repository doesn't exist")
+
+from fritter.git import GitRepository
+from fritter.repo_template_loader import RepoTemplateLoader
+from fritter.libfritter.libfritter.previewer import Previewer
+
+repo = GitRepository(REPO_ROOT)
+loader = RepoTemplateLoader(repo)
+
+added_files = repo.files_added(REVISION)
+
+for file_path in added_files:
+    print('-' * 10, file_path, '-' * 10)
+    template_name = RepoTemplateLoader.template_name(file_path, REVISION)
+    et = loader.load(template_name)
+    prev = Previewer(et)
+    prev.preview(sys.stdout)

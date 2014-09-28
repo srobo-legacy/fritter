@@ -41,7 +41,7 @@ class GitRepository(object):
         self._git('checkout', ref)
 
     def files_added(self, ref):
-        out = self._git('diff', '--name-status', ref, ref + '^')
+        out = self._git('diff', '--name-status', ref + '^', ref)
         lines = out.splitlines()
         added = []
         for line in lines:

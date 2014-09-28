@@ -64,6 +64,27 @@ def test_files_added():
     # don't care about ordering
     assert set(['foo', 'bar']) == set(added)
 
+def test_file_content():
+    repo = build_repo('file_content')
+
+    def helper(name, ref, expected):
+        actual = repo.file_content(name, ref)
+        assert expected == actual, "Wrong content in '{0}'.".format(name)
+
+    yield helper, 'bar', 'HEAD', 'bacon\n'
+    yield helper, 'bar', 'HEAD^', ''
+
+def test_file_not_present():
+    repo = build_repo('file_not_present')
+
+    threw = False
+    try:
+        repo.file_content('nope', 'HEAD')
+    except:
+        threw = True
+
+    assert threw, "Should have raised an exception about the file not existing"
+
 def build_repo(name):
     repo_path = os.path.join(work_path, name)
     os.mkdir(repo_path)

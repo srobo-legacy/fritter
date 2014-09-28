@@ -37,9 +37,6 @@ class GitRepository(object):
             args.append(ref)
         self._git(args)
 
-    def checkout(self, ref):
-        self._git('checkout', ref)
-
     def files_added(self, ref):
         out = self._git('diff', '--name-status', ref + '^', ref)
         lines = out.splitlines()
@@ -50,3 +47,7 @@ class GitRepository(object):
                 added.append(path)
 
         return added
+
+    def file_content(self, file_path, ref):
+        content = self._git('show', "{0}:{1}".format(ref, file_path))
+        return content

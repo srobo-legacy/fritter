@@ -55,7 +55,17 @@ def test_bare():
     assert is_bare, "Should be bare when created as such"
 
 def test_files_added():
-    repo_path = os.path.join(work_path, 'files_added')
+    repo = build_repo('files_added')
+
+    added = repo.files_added('HEAD')
+    assert ['another'] == added
+
+    added = repo.files_added('HEAD^')
+    # don't care about ordering
+    assert set(['foo', 'bar']) == set(added)
+
+def build_repo(name):
+    repo_path = os.path.join(work_path, name)
     os.mkdir(repo_path)
 
     def run(cmd):
@@ -99,10 +109,4 @@ def test_files_added():
     commit_all('Third')
 
     repo = GitRepository(repo_path)
-
-    added = repo.files_added('HEAD')
-    assert [another] == added
-
-    added = repo.files_added('HEAD^')
-    # don't care about ordering
-    assert set([foo, bar]) == set(added)
+    return repo

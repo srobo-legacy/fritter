@@ -24,8 +24,13 @@ loader = RepoTemplateLoader(repo)
 added_files = repo.files_added(REVISION)
 
 for file_path in added_files:
+    if not file_path.endswith('.txt'):
+        continue
     print('-' * 10, file_path, '-' * 10)
-    template_name = RepoTemplateLoader.template_name(file_path, REVISION)
-    et = loader.load(template_name)
-    prev = Previewer(et)
-    prev.preview(sys.stdout)
+    try:
+        template_name = RepoTemplateLoader.template_name(file_path, REVISION)
+        et = loader.load(template_name)
+        prev = Previewer(et)
+        prev.preview(sys.stdout)
+    except Exception as e:
+        print("# Error\n\n    {0}\n".format(e))

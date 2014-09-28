@@ -24,17 +24,29 @@ class GitRepository(object):
     def __init__(self, path):
         self._path = path
 
-    def _git(self, args):
-        _git(self._path, args)
+    def _git(self, *args):
+        return _git(self._path, list(args))
 
-    def fetch(source, ref = None):
+    def is_bare(self):
+        out = self._git('config', '--get', '--bool', 'core.bare')
+        return out.strip().lower() == 'true'
+
+    def fetch(self, source, ref = None):
         args = ['fetch', source]
         if ref is not None:
             args.append(ref)
-        _git(args)
+        self._git(args)
 
-    def checkout(ref):
-        _git(['checkout', ref])
+    def checkout(self, ref):
+        self._git('checkout', ref)
 
-    def files_added(commit):
-        out = _git(['diff', '--name-status'])
+    def files_added(self, ref):
+        out = self._git('diff', '--name-status', ref, ref + '^')
+        lines = out.splitlines()
+        added = []
+        for line in lines:
+            kind, path = line.split()
+            if kind == 'A':
+                added.append(path)
+
+        return added

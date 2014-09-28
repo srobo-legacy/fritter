@@ -20,6 +20,7 @@ from fritter.libfritter.libfritter.previewer import Previewer
 
 repo = GitRepository(REPO_ROOT)
 loader = RepoTemplateLoader(repo)
+previewer = Previewer(loader.load, sys.stdout)
 
 added_files = repo.files_added(REVISION)
 
@@ -27,10 +28,5 @@ for file_path in added_files:
     if not file_path.endswith('.txt'):
         continue
     print('-' * 10, file_path, '-' * 10)
-    try:
-        template_name = RepoTemplateLoader.template_name(file_path, REVISION)
-        et = loader.load(template_name)
-        prev = Previewer(et)
-        prev.preview(sys.stdout)
-    except Exception as e:
-        print("# Error\n\n    {0}\n".format(e))
+    template_name = RepoTemplateLoader.template_name(file_path, REVISION)
+    previewer.preview(template_name)

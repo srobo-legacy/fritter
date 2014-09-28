@@ -1,12 +1,18 @@
+# -*- coding: utf-8 -*-
+
+from __future__ import unicode_literals
 
 import os
 import shutil
 from subprocess import CalledProcessError, check_output
+import sys
 import tempfile
 
 from tests_helpers import root
 
 from fritter.git import GitRepository
+
+BACON_PONY_LINE = "bacon-♘\n"
 
 work_path = None
 
@@ -71,7 +77,7 @@ def test_file_content():
         actual = repo.file_content(name, ref)
         assert expected == actual, "Wrong content in '{0}'.".format(name)
 
-    yield helper, 'bar', 'HEAD', 'bacon\n'
+    yield helper, 'bar', 'HEAD', BACON_PONY_LINE
     yield helper, 'bar', 'HEAD^', ''
 
 def test_file_not_present():
@@ -93,14 +99,19 @@ def build_repo(name):
         check_output(cmd, shell=True, cwd=repo_path)
 
     def open_(name, *args):
-        return open(os.path.join(repo_path, name), *args)
+        if sys.version_info[0] < 3:
+            import codecs
+            open_ = codecs.open
+        else:
+            open_ = open
+        return open_(os.path.join(repo_path, name), *args, encoding='utf-8')
 
     def touch(name):
         open_(name, 'w').close()
 
     def edit(name):
         with open_(name, 'w') as f:
-            f.write("bacon\n")
+            f.write(BACON_PONY_LINE)
 
     def rm(name):
         os.remove(os.path.join(repo_path, name))

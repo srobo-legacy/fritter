@@ -12,7 +12,7 @@ def _git(cwd, args):
         logging.error(tpl, cmd, proc.returncode, out, err)
         raise CalledProcessError(proc.returncode, cmd, out)
 
-    return out
+    return out.decode('utf-8')
 
 class GitRepository(object):
 

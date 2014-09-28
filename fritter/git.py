@@ -31,12 +31,6 @@ class GitRepository(object):
         out = self._git('config', '--get', '--bool', 'core.bare')
         return out.strip().lower() == 'true'
 
-    def fetch(self, source, ref = None):
-        args = ['fetch', source]
-        if ref is not None:
-            args.append(ref)
-        self._git(args)
-
     def files_added(self, ref):
         out = self._git('diff', '--name-status', ref + '^', ref)
         lines = out.splitlines()

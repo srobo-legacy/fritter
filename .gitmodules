@@ -1,0 +1,3 @@
+[submodule "fritter/libfritter"]
+	path = fritter/libfritter
+	url = ../libfritter.git

@@ -120,6 +120,8 @@ def build_repo(name):
         run('git add -A . && git commit -m "{0}"'.format(msg))
 
     run('git init')
+    run('git config user.email "nope@example.com"')
+    run('git config user.name "Nope Example"')
 
     baseline = 'baseline'
     touch(baseline)

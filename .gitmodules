@@ -1,3 +1,6 @@
 [submodule "fritter/libfritter"]
 	path = fritter/libfritter
 	url = ../libfritter.git
+[submodule "fritter/srusers"]
+	path = fritter/srusers
+	url = ../srusers.git

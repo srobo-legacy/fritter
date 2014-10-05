@@ -79,7 +79,7 @@ def test_good_template():
     pp = patchset.project
     assert project == pp, "Gave feedback on the wrong project"
     pr = patchset.revision
-    assert revision == pr, "Gave feedback on the wrong project"
+    assert revision == pr, "Gave feedback on the wrong revision"
 
     assert tpl in message, "Should mention the file name in the message"
     assert preview in message, "Should include the preview in the message"

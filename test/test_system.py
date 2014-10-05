@@ -11,6 +11,8 @@ import json
 import mock
 from nose import with_setup
 import os.path
+import shutil
+import tempfile
 
 from fritter.fritter_service import FritterService
 
@@ -23,6 +25,8 @@ from fritter.libfritter.test.tests_helpers import delete_db, ensure_db, \
 
 TEST_DB = os.path.join(test_root(), 'test.db')
 
+work_path = None
+
 def clear_db():
     delete_db(TEST_DB)
 
@@ -32,7 +36,15 @@ def get_last_email():
 def setup():
     # don't use `test_data` here as that asserts the file exists,
     # which it validly might not
+    global work_path
+    work_path = tempfile.mkdtemp()
+    print("work_path:", work_path)
+    shutil.copytree(test_data('testing-repo.git'), os.path.join(work_path, 'testing-repo.git'))
     ensure_db(TEST_DB)
+
+def teardown():
+    global work_path
+    shutil.remove(work_path)
 
 def load_event(file_name):
     file_path = test_data(file_name)
@@ -40,7 +52,9 @@ def load_event(file_name):
         return json.load(f)
 
 def load_config():
-    config = configparser.SafeConfigParser({'test_root': test_root()})
+    global work_path
+    defaults = {'test_root': test_root(), 'work_path': work_path}
+    config = configparser.SafeConfigParser(defaults)
     ini_path = test_data('test.ini')
     read = config.read(ini_path)
     assert ini_path in read, "Failed to read test config file."

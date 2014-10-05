@@ -4,11 +4,9 @@ from __future__ import unicode_literals
 
 import os
 import shutil
-from subprocess import CalledProcessError, check_output
+from subprocess import check_output
 import sys
 import tempfile
-
-from tests_helpers import root
 
 from fritter.git import GitRepository
 
@@ -23,42 +21,6 @@ def setUp():
 def tearDown():
     global work_path
     shutil.rmtree(work_path)
-
-def assert_clone(target):
-    repo_root = root()
-    clone_path = os.path.join(work_path, target)
-
-    repo = GitRepository.clone(repo_root, clone_path)
-    assert os.path.exists(clone_path), "Failed to create folder during clone of '{0}'.".format(target)
-    assert repo is not None, "Failed to create repo from clone of '{0}'.".format(target)
-    return repo
-
-def test_clone():
-    assert_clone('clone')
-
-def test_clone_fail():
-    clone_path = os.path.join(work_path, 'clone_fail')
-
-    threw = False
-    try:
-        repo = GitRepository.clone(work_path, clone_path)
-    except CalledProcessError:
-        threw = True
-
-    assert threw, "Should have raised an exception for git's error"
-
-def test_not_bare():
-    repo = assert_clone('not_bare')
-    is_bare = repo.is_bare()
-    assert not is_bare, "Repo should not invalidly claim to be bare"
-
-def test_bare():
-    repo_path = os.path.join(work_path, 'bare')
-    os.mkdir(repo_path)
-    check_output('git init --bare', shell=True, cwd=repo_path)
-    repo = GitRepository(repo_path)
-    is_bare = repo.is_bare()
-    assert is_bare, "Should be bare when created as such"
 
 def test_files_added():
     repo = build_repo('files_added')

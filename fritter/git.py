@@ -16,20 +16,11 @@ def _git(cwd, args):
 
 class GitRepository(object):
 
-    @classmethod
-    def clone(cls, source, dest):
-        _git(None, ['clone', source, dest])
-        return cls(dest)
-
     def __init__(self, path):
         self._path = path
 
     def _git(self, *args):
         return _git(self._path, list(args))
-
-    def is_bare(self):
-        out = self._git('config', '--get', '--bool', 'core.bare')
-        return out.strip().lower() == 'true'
 
     def files_added(self, ref):
         out = self._git('diff', '--name-status', ref + '^', ref, '--')

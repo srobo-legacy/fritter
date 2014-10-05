@@ -19,6 +19,7 @@ from fritter.fritter_service import FritterService
 from fritter.git import GitRepository
 from fritter.gerrit_ssh import GerritSSH
 from fritter.gerrit_stream.gerritthread import GerritThread
+from fritter.group_mailer import GroupMailer
 from fritter.ldap_connector import LDAPGroupConnector
 from fritter.repo_template_loader import RepoTemplateLoader
 
@@ -45,7 +46,9 @@ db_connector = partial(sqlite3.connect, config.get('fritter', 'sqlite_db'))
 mailer_config = dict(config.items('mailer'))
 mailer = Mailer(mailer_config, db_connector, loader.load)
 
-fritter = FritterService(target_project, repo, previewer, feedback)
+group_mailer = GroupMailer(mailer, ldap_connector, loader.load)
+
+fritter = FritterService(target_project, repo, previewer, feedback, group_mailer)
 
 listener = GerritThread(config, fritter.event_handler)
 listener.start()

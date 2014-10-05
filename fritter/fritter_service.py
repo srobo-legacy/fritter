@@ -25,11 +25,12 @@ class FritterService(object):
     def create_patchset(event):
         return PatchSet(event['change']['project'], event['patchSet']['revision'])
 
-    def __init__(self, project_name, repo, previewer, feedback_handler):
+    def __init__(self, project_name, repo, previewer, feedback_handler, mailer):
         self._project = project_name
         self._repo = repo
         self._previewer = previewer
         self._feedback = feedback_handler
+        self._mailer = mailer
         self._logger = logging.getLogger('fritter.fritter_service')
         self._handlers = {
             'patchset-created': self.patchset_created,
@@ -52,9 +53,13 @@ class FritterService(object):
             self._logger.exception("Error handling '%s' event for %s.",
                                    kind, patchset)
 
-    def patchset_created(self, patchset):
+    def _get_added_templates(self, patchset):
         added_files = self._repo.files_added(patchset.revision)
         added_templates = [f for f in added_files if f.endswith('.txt')]
+        return added_templates
+
+    def patchset_created(self, patchset):
+        added_templates = self._get_added_templates(patchset)
         if not added_templates:
             return
 
@@ -82,6 +87,23 @@ class FritterService(object):
 
         return errors_map
 
-
     def change_merged(self, patchset):
-        pass
+        added_templates = self._get_added_templates(patchset)
+
+        errors_map = None
+        with close_on_exit(StringIO()) as preview_buffer:
+            errors_map = self._write_preview(patchset.revision, added_templates, preview_buffer)
+
+        if errors_map:
+            message_lines = ["Errors in templates. Unable to send the following:", ""]
+            for f, err in errors_map.items():
+                message_lines.append(self._previewer.format_section(f, err))
+
+            message = "\n".join(message_lines)
+            self._feedback.set_review(patchset, message, 0)
+
+        valid_templates = set(added_templates) - set(errors_map.keys())
+
+        for template_path in valid_templates:
+            template_name = RepoTemplateLoader.template_name(file_path, patchset.revision)
+            self._mailer.send_template(template_name)

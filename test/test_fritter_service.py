@@ -32,7 +32,7 @@ def get_service(project, files_added = [], preview = ''):
     repo = FakeRepo(files_added)
     previewer = FakePreviewer(preview)
     feedback = FakeFeedback()
-    service = FritterService(project, repo, previewer, feedback)
+    service = FritterService(project, repo, previewer, feedback, None)
     return service, repo, previewer, feedback
 
 def get_event(project, revision, type_):

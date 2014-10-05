@@ -37,13 +37,13 @@ class FritterService(object):
         }
 
     def event_handler(self, event):
-        patchset = self.create_patchset(event)
-        if patchset.project != self._project:
-            return
-
         kind = event['type']
         handler = self._handlers.get(kind, None)
         if handler is None:
+            return
+
+        patchset = self.create_patchset(event)
+        if patchset.project != self._project:
             return
 
         try:

@@ -53,6 +53,10 @@ def test_create_patchset():
 
     assert expected == ps, "Created bad patch set"
 
+def test_other_event():
+    service, _, _, _ = get_service('')
+    service.event_handler({'type':'other'})
+
 def test_good_template():
     tpl = 'tpl.txt'
     preview = 'my-preview'

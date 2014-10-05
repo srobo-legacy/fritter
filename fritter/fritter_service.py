@@ -41,13 +41,18 @@ class FritterService(object):
         kind = event['type']
         handler = self._handlers.get(kind, None)
         if handler is None:
+            self._logger.debug("Ignoring %s event without handler.", kind)
             return
 
         patchset = self.create_patchset(event)
         if patchset.project != self._project:
+            self._logger.debug("Ignoring %s event on unrelated project: %s.",
+                               kind, patchset)
             return
 
         try:
+            self._logger.info("About to handle %s event for %s",
+                              kind, patchset)
             handler(patchset)
         except:
             self._logger.exception("Error handling '%s' event for %s.",
@@ -71,6 +76,8 @@ class FritterService(object):
         verified = 1
         if errors_map:
             verified = -1
+
+        self._logger.debug("Review of %s: %d", patchset, verified)
 
         self._feedback.set_review(patchset, preview, verified)
 
@@ -108,4 +115,5 @@ class FritterService(object):
 
         for template_path in valid_templates:
             template_name = RepoTemplateLoader.template_name(file_path, patchset.revision)
+            self._logger.info("Sending %s.", template_name)
             self._mailer.send_template(template_name)

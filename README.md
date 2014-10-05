@@ -18,3 +18,7 @@ When a gerrit patchset is merged into the target repository it is inspected
 to see if it contains any new template files. Any templates found are
 inspected to see who to send them to, as determined via group mappings
 within an LDAP database, and then queued for sending.
+
+## Configuration
+See `config.ini` for the defaults and explanations. All the various scripts
+also load a `local.ini` which can override any of the values.

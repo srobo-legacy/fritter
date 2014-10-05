@@ -89,6 +89,8 @@ class FritterService(object):
 
     def change_merged(self, patchset):
         added_templates = self._get_added_templates(patchset)
+        if not added_templates:
+            return
 
         errors_map = None
         with close_on_exit(StringIO()) as preview_buffer:

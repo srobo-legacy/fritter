@@ -44,7 +44,7 @@ def setup():
 
 def teardown():
     global work_path
-    shutil.remove(work_path)
+    shutil.rmtree(work_path)
 
 def load_event(file_name):
     file_path = test_data(file_name)

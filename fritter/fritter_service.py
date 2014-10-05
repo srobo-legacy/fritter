@@ -146,6 +146,6 @@ class FritterService(object):
         valid_templates = set(added_templates) - set(errors_map.keys())
 
         for template_path in valid_templates:
-            template_name = RepoTemplateLoader.template_name(file_path, patchset.revision)
+            template_name = RepoTemplateLoader.template_name(template_path, patchset.revision)
             self._logger.info("Sending %s.", template_name)
             self._mailer.send_template(template_name)

@@ -24,6 +24,6 @@ config.read([os.path.join(baseDir, 'local.ini')])
 
 mailer, db_connector = FritterService.create_mailer(config)
 
-unsent_mails = PendingSend.Unsent(db_connector, max_results = limit)
+unsent_mails = PendingSend.Unsent(db_connector, max_results = 50)
 for ps in unsent_mails:
     mailer.try_send(ps)

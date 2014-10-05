@@ -1,4 +1,6 @@
 
+from collections import namedtuple
+
 from . import srusers
 
 class UnknownGroup(Exception):
@@ -18,6 +20,8 @@ class InvalidGroup(Exception):
         super(InvalidGroup, self).__init__(
             "Group '{0}' is not allowed.".format(group_name)
         )
+
+User = namedtuple('User', ['frist_name', 'last_name', 'email'])
 
 class LDAPGroupConnector(object):
     def __init__(self, valid_groups):
@@ -48,11 +52,12 @@ class LDAPGroupConnector(object):
         g = self._get_group(group_name)
         return g.desc or group_name
 
-    def get_emails(self, group_name):
+    def get_users(self, group_name):
         self._check_valid(group_name)
         g = self._get_group(group_name)
-        emails = []
+        users = []
         for uid in g.members:
             u = srusers.user(uid)
-            emails.append(u.email)
-        return emails
+            user = User(u.cname, u.sname, u.email)
+            users.append(user)
+        return users

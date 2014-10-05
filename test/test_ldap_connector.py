@@ -1,7 +1,7 @@
 
 import mock
 
-from fritter.ldap_connector import LDAPGroupConnector, InvalidGroup, UnknownGroup
+from fritter.ldap_connector import LDAPGroupConnector, InvalidGroup, UnknownGroup, User
 
 def get_mock_srusers():
     return mock.patch('fritter.ldap_connector.srusers')
@@ -14,8 +14,10 @@ def get_mock_group_ctor(in_db, desc = None, members = []):
     mock_group_ctor = mock.Mock(return_value = mock_group)
     return mock_group_ctor
 
-def get_mock_user_ctor(email):
+def get_mock_user_ctor(first, last, email):
     mock_user = mock.Mock()
+    mock_user.cname = first
+    mock_user.sname = last
     mock_user.email = email
     mock_user_ctor = mock.Mock(return_value = mock_user)
     return mock_user_ctor
@@ -86,20 +88,21 @@ def test_emails_empty_group():
         name = 'valid'
         c = LDAPGroupConnector([name])
 
-        actual = c.get_emails(name)
+        actual = c.get_users(name)
         assert [] == actual, "Should return empty list for empty group"
 
 def test_describe_valid_group_no_description():
     with get_mock_srusers() as mock_srusers:
         member_name = 'my-member-uid'
         mock_srusers.group = get_mock_group_ctor(in_db = True, members = [member_name])
+        first, last = 'fff', 'lll'
         email = 'tim@example.com'
-        mock_srusers.user = get_mock_user_ctor(email)
+        mock_srusers.user = get_mock_user_ctor(first, last, email)
 
         name = 'valid'
         c = LDAPGroupConnector([name])
 
-        actual = c.get_emails(name)
-        expected = [email]
+        actual = c.get_users(name)
+        expected = [User(first, last, email)]
         assert expected == actual, "Should return a list of emails"
         mock_srusers.user.assert_called_once_with(member_name)

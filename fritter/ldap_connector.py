@@ -21,7 +21,7 @@ class InvalidGroup(Exception):
             "Group '{0}' is not allowed.".format(group_name)
         )
 
-User = namedtuple('User', ['frist_name', 'last_name', 'email'])
+User = namedtuple('User', ['first_name', 'last_name', 'email'])
 
 class LDAPGroupConnector(object):
     def __init__(self, valid_groups):

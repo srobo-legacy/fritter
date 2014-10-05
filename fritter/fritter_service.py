@@ -2,7 +2,9 @@
 from __future__ import print_function
 
 from contextlib import contextmanager
+from functools import partial
 import logging
+import sqlite3
 
 try:
     # python 2
@@ -11,7 +13,12 @@ except ImportError:
     # python 3
     from io import StringIO
 
-from .gerrit_ssh import PatchSet
+from .libfritter.libfritter.mailer import Mailer
+from .libfritter.libfritter.previewer import Previewer
+from .git import GitRepository
+from .gerrit_ssh import GerritSSH, PatchSet
+from .group_mailer import GroupMailer
+from .ldap_connector import LDAPGroupConnector
 from .repo_template_loader import RepoTemplateLoader
 
 @contextmanager
@@ -24,6 +31,31 @@ class FritterService(object):
     @staticmethod
     def create_patchset(event):
         return PatchSet(event['change']['project'], event['patchSet']['revision'])
+
+    @classmethod
+    def create(cls, config):
+        "Create a new instance of the service around the given config."
+
+        valid_groups = [g.strip() for g in config.get('ldap', 'valid-groups').split(',')]
+        ldap_connector = LDAPGroupConnector(valid_groups)
+
+        target_project = config.get('fritter', 'project_name')
+        repo = GitRepository(config.get('fritter', 'project_path'))
+        loader = RepoTemplateLoader(repo)
+        previewer = Previewer(loader.load, ldap_connector.describe, None)
+
+        feedback = GerritSSH(config)
+
+        db_connector = partial(sqlite3.connect, config.get('fritter', 'sqlite_db'))
+
+        mailer_config = dict(config.items('mailer'))
+        mailer = Mailer(mailer_config, db_connector, loader.load)
+
+        group_mailer = GroupMailer(mailer, ldap_connector, loader.load)
+
+        service = cls(target_project, repo, previewer, feedback, group_mailer)
+
+        return service
 
     def __init__(self, project_name, repo, previewer, feedback_handler, mailer):
         self._project = project_name

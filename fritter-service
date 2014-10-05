@@ -7,21 +7,12 @@ except ImportError:
     # python 3
     import configparser
 
-from functools import partial
 import logging
 import os
-import sqlite3
 import sys
 
-from fritter.libfritter.libfritter.mailer import Mailer
-from fritter.libfritter.libfritter.previewer import Previewer
 from fritter.fritter_service import FritterService
-from fritter.git import GitRepository
-from fritter.gerrit_ssh import GerritSSH
 from fritter.gerrit_stream.gerritthread import GerritThread
-from fritter.group_mailer import GroupMailer
-from fritter.ldap_connector import LDAPGroupConnector
-from fritter.repo_template_loader import RepoTemplateLoader
 
 logging.basicConfig(level=logging.INFO, stream=sys.stdout)
 
@@ -31,24 +22,7 @@ config = configparser.SafeConfigParser()
 config.readfp(open(os.path.join(baseDir, 'config.ini')))
 config.read([os.path.join(baseDir, 'local.ini')])
 
-valid_groups = [g.strip() for g in config.get('ldap', 'valid-groups').split(',')]
-ldap_connector = LDAPGroupConnector(valid_groups)
-
-target_project = config.get('fritter', 'project_name')
-repo = GitRepository(config.get('fritter', 'project_path'))
-loader = RepoTemplateLoader(repo)
-previewer = Previewer(loader.load, ldap_connector.describe, None)
-
-feedback = GerritSSH(config)
-
-db_connector = partial(sqlite3.connect, config.get('fritter', 'sqlite_db'))
-
-mailer_config = dict(config.items('mailer'))
-mailer = Mailer(mailer_config, db_connector, loader.load)
-
-group_mailer = GroupMailer(mailer, ldap_connector, loader.load)
-
-fritter = FritterService(target_project, repo, previewer, feedback, group_mailer)
+fritter = FritterService.create(config)
 
 listener = GerritThread(config, fritter.event_handler)
 listener.start()

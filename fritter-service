@@ -1,27 +1,23 @@
 #!/usr/bin/env python
 
-from __future__ import print_function
+try:
+    # python 2
+    import ConfigParser as configparser
+except ImportError:
+    # python 3
+    import configparser
 
-from contextlib import contextmanager
 from functools import partial
 import logging
 import os
 import sqlite3
 import sys
 
-try:
-    # python 2
-    from StringIO import StringIO
-    import ConfigParser as configparser
-except ImportError:
-    # python 3
-    from io import StringIO
-    import configparser
-
 from fritter.libfritter.libfritter.mailer import Mailer
 from fritter.libfritter.libfritter.previewer import Previewer
+from fritter.fritter_service import FritterService
 from fritter.git import GitRepository
-from fritter.gerrit_ssh import GerritSSH, PatchSet
+from fritter.gerrit_ssh import GerritSSH
 from fritter.gerrit_stream.gerritthread import GerritThread
 from fritter.ldap_connector import LDAPGroupConnector
 from fritter.repo_template_loader import RepoTemplateLoader
@@ -49,50 +45,9 @@ db_connector = partial(sqlite3.connect, config.get('fritter', 'sqlite_db'))
 mailer_config = dict(config.items('mailer'))
 mailer = Mailer(mailer_config, db_connector, loader.load)
 
-@contextmanager
-def close_on_exit(item):
-    yield item
-    item.close()
+fritter = FritterService(target_project, repo, previewer, feedback)
 
-def write_preview(revision, target):
-    added_files = repo.files_added(revision)
-
-    errors_map = {}
-
-    for file_path in added_files:
-        if not file_path.endswith('.txt'):
-            continue
-        print('-' * 10, file_path, '-' * 10, file = target)
-        print(file = target)
-        template_name = RepoTemplateLoader.template_name(file_path, revision)
-        errors = previewer.preview(template_name, target)
-        if errors:
-            errors_map[file_path] = errors
-
-    return errors_map
-
-def event_handler(event):
-    if event['type'] != 'patchset-created':
-        return
-
-    change = event['change']
-    if change['project'] != target_project:
-        return
-
-    revision = event['patchSet']['revision']
-    preview = None
-    with close_on_exit(StringIO()) as preview_buffer:
-        errors_map = write_preview(revision, preview_buffer)
-        preview = preview_buffer.getvalue()
-
-    verified = 1
-    if errors_map:
-        verified = -1
-
-    patch_set = PatchSet(change['project'], revision)
-    feedback.set_review(patch_set, preview, verified)
-
-listener = GerritThread(config, event_handler)
+listener = GerritThread(config, fritter.event_handler)
 listener.start()
 
 while True:

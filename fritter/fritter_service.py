@@ -51,7 +51,7 @@ class FritterService(object):
         mailer_config = dict(config.items('mailer'))
         mailer = Mailer(mailer_config, db_connector, loader.load)
 
-        group_mailer = GroupMailer(mailer, ldap_connector, loader.load)
+        group_mailer = GroupMailer(mailer.email_template, ldap_connector.get_users, loader.load)
 
         service = cls(target_project, repo, previewer, feedback, group_mailer)
 

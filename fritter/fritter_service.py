@@ -135,10 +135,12 @@ class FritterService(object):
         with close_on_exit(StringIO()) as preview_buffer:
             errors_map = self._write_preview(patchset.revision, added_templates, preview_buffer)
 
+        format_section = self._previewer.format_section
+
         if errors_map:
             message_lines = ["Errors in templates. Unable to send the following:", ""]
             for f, err in errors_map.items():
-                message_lines.append(self._previewer.format_section(f, err))
+                message_lines.append(format_section(f, err))
 
             message = "\n".join(message_lines)
             self._feedback.set_review(patchset, message, 0)
@@ -149,3 +151,8 @@ class FritterService(object):
             template_name = RepoTemplateLoader.template_name(template_path, patchset.revision)
             self._logger.info("Sending %s.", template_name)
             self._mailer.send_template(template_name)
+
+        success_heading = "Success - sent the following templates"
+        templates_str = "\n".join(valid_templates)
+        success_message = format_section(success_heading, templates_str)
+        self._feedback.set_review(patchset, success_message, 0)

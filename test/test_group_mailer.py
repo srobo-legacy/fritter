@@ -3,15 +3,13 @@ import mock
 
 from fritter.group_mailer import GroupMailer
 from fritter.ldap_connector import User
-
-class FakeEmailTemplate(object):
-    def __init__(self, to):
-        self.to = to
+from fritter.libfritter.libfritter.email_template import EmailTemplate
 
 def test_send_template():
 
     expected_group = 'to-group'
-    fake_loader = mock.Mock(return_value = FakeEmailTemplate([expected_group]))
+    template_content = "To: {}\nSubject: nop".format(expected_group)
+    fake_loader = mock.Mock(return_value = EmailTemplate(template_content))
 
     user_to_return = User('fff', 'lll', 'fl@example.com')
     fake_connector = mock.Mock(return_value = [user_to_return])

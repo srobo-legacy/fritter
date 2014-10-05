@@ -23,7 +23,7 @@ class GroupMailer(object):
 
     def send_template(self, template_name):
         et = self._template_factory(template_name)
-        for group_name in et.to:
+        for group_name in et.recipient:
             for user in self._group_expander(group_name):
                 values = user._asdict()
                 self._mailer(user.email, template_name, values)

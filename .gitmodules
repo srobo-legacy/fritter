@@ -4,3 +4,6 @@
 [submodule "fritter/srusers"]
 	path = fritter/srusers
 	url = ../srusers.git
+[submodule "fritter/gerrit_stream"]
+	path = fritter/gerrit_stream
+	url = ../gerritbot.git

@@ -1,0 +1,102 @@
+#!/usr/bin/env python
+
+from __future__ import print_function
+
+from contextlib import contextmanager
+from functools import partial
+import logging
+import os
+import sqlite3
+import sys
+
+try:
+    # python 2
+    from StringIO import StringIO
+    import ConfigParser as configparser
+except ImportError:
+    # python 3
+    from io import StringIO
+    import configparser
+
+from fritter.libfritter.libfritter.mailer import Mailer
+from fritter.libfritter.libfritter.previewer import Previewer
+from fritter.git import GitRepository
+from fritter.gerrit_ssh import GerritSSH, PatchSet
+from fritter.gerrit_stream.gerritthread import GerritThread
+from fritter.ldap_connector import LDAPGroupConnector
+from fritter.repo_template_loader import RepoTemplateLoader
+
+logging.basicConfig(level=logging.INFO, stream=sys.stdout)
+
+baseDir = os.path.dirname(__file__)
+
+config = configparser.SafeConfigParser()
+config.readfp(open(os.path.join(baseDir, 'config.ini')))
+config.read([os.path.join(baseDir, 'local.ini')])
+
+valid_groups = [g.strip() for g in config.get('ldap', 'valid-groups').split(',')]
+ldap_connector = LDAPGroupConnector(valid_groups)
+
+target_project = config.get('fritter', 'project_name')
+repo = GitRepository(config.get('fritter', 'project_path'))
+loader = RepoTemplateLoader(repo)
+previewer = Previewer(loader.load, ldap_connector.describe, None)
+
+feedback = GerritSSH(config)
+
+db_connector = partial(sqlite3.connect, config.get('fritter', 'sqlite_db'))
+
+mailer_config = dict(config.items('mailer'))
+mailer = Mailer(mailer_config, db_connector, loader.load)
+
+@contextmanager
+def close_on_exit(item):
+    yield item
+    item.close()
+
+def write_preview(revision, target):
+    added_files = repo.files_added(revision)
+
+    errors_map = {}
+
+    for file_path in added_files:
+        if not file_path.endswith('.txt'):
+            continue
+        print('-' * 10, file_path, '-' * 10, file = target)
+        print(file = target)
+        template_name = RepoTemplateLoader.template_name(file_path, revision)
+        errors = previewer.preview(template_name, target)
+        if errors:
+            errors_map[file_path] = errors
+
+    return errors_map
+
+def event_handler(event):
+    if event['type'] != 'patchset-created':
+        return
+
+    change = event['change']
+    if change['project'] != target_project:
+        return
+
+    revision = event['patchSet']['revision']
+    preview = None
+    with close_on_exit(StringIO()) as preview_buffer:
+        errors_map = write_preview(revision, preview_buffer)
+        preview = preview_buffer.getvalue()
+
+    verified = 1
+    if errors_map:
+        verified = -1
+
+    patch_set = PatchSet(change['project'], change['branch'], change['id'], revision)
+    feedback.set_review(patch_set, preview, verified)
+
+listener = GerritThread(config, event_handler)
+listener.start()
+
+while True:
+    try:
+        line = sys.stdin.readline()
+    except KeyboardInterrupt:
+        break

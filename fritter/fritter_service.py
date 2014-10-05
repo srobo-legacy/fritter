@@ -32,25 +32,39 @@ class FritterService(object):
     def create_patchset(event):
         return PatchSet(event['change']['project'], event['patchSet']['revision'])
 
-    @classmethod
-    def create(cls, config):
-        "Create a new instance of the service around the given config."
+    @staticmethod
+    def _create_core(config):
 
         valid_groups = [g.strip() for g in config.get('ldap', 'valid-groups').split(',')]
         ldap_connector = LDAPGroupConnector(valid_groups)
 
-        target_project = config.get('fritter', 'project_name')
         repo = GitRepository(config.get('fritter', 'project_path'))
         loader = RepoTemplateLoader(repo)
-        previewer = Previewer(loader.load, ldap_connector.describe, None)
-
-        feedback = GerritSSH(config)
 
         db_path = config.get('fritter', 'sqlite_db')
         db_connector = partial(sqlite3.connect, db_path)
 
         mailer_config = dict(config.items('mailer'))
         mailer = Mailer(mailer_config, db_connector, loader.load)
+
+        return mailer, ldap_connector, repo, loader, db_connector
+
+    @classmethod
+    def create_mailer(cls, config):
+        "Create a new mailer instance for use in just sending the emails."
+        mailer, _, _, _, db_connector = cls._create_core(config)
+        return mailer, db_connector
+
+    @classmethod
+    def create(cls, config):
+        "Create a new instance of the service around the given config."
+
+        mailer, ldap_connector, repo, loader, db_connector = cls._create_core(config)
+
+        target_project = config.get('fritter', 'project_name')
+        previewer = Previewer(loader.load, ldap_connector.describe, None)
+
+        feedback = GerritSSH(config)
 
         group_mailer = GroupMailer(mailer.email_template, ldap_connector.get_users, loader.load)
 

@@ -32,7 +32,7 @@ class GitRepository(object):
         return out.strip().lower() == 'true'
 
     def files_added(self, ref):
-        out = self._git('diff', '--name-status', ref + '^', ref)
+        out = self._git('diff', '--name-status', ref + '^', ref, '--')
         lines = out.splitlines()
         added = []
         for line in lines:

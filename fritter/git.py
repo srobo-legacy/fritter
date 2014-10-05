@@ -8,8 +8,8 @@ def _git(cwd, args):
     out, err = proc.communicate()
     if proc.returncode:
         cmd = "'{0}'".format("' '".join(args))
-        tpl = "Call to '%s' failed (returned %d):\nSTDOUT:\n%s\nSTDERR:\n%s"
-        logging.error(tpl, cmd, proc.returncode, out, err)
+        tpl = "Call to '%s' in '%s' failed (returned %d):\nSTDOUT:\n%s\nSTDERR:\n%s"
+        logging.error(tpl, cmd, cwd, proc.returncode, out, err)
         raise CalledProcessError(proc.returncode, cmd, out)
 
     return out.decode('utf-8')

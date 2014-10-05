@@ -1,0 +1,14 @@
+{
+    "refUpdate": {
+        "newRev": "c994ec517e4f809c8acf3b0c7f4d9f466b8069b1",
+        "oldRev": "020a24b3bafe2cc86c3fc4fecc5855c005be42a7",
+        "project": "testing-repo",
+        "refName": "master"
+    },
+    "submitter": {
+        "email": "nope@example.com",
+        "name": "peter law",
+        "username": "peter"
+    },
+    "type": "ref-updated"
+}

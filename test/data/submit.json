@@ -1,0 +1,45 @@
+{
+    "change": {
+        "branch": "master",
+        "commitMessage": "Tell them they have nice ships\n\nChange-Id: I94220ff59970be291f5497b44d810ae3c548f82c\n",
+        "id": "I94220ff59970be291f5497b44d810ae3c548f82c",
+        "number": "10",
+        "owner": {
+            "email": "nope@example.com",
+            "name": "peter law",
+            "username": "peter"
+        },
+        "project": "testing-repo",
+        "status": "NEW",
+        "subject": "Tell them they have nice ships",
+        "url": "https://localhost/gerrit/10"
+    },
+    "patchSet": {
+        "author": {
+            "email": "nope@example.com",
+            "name": "Peter Law",
+            "username": ""
+        },
+        "createdOn": 1412525697,
+        "isDraft": false,
+        "number": "1",
+        "parents": [
+            "020a24b3bafe2cc86c3fc4fecc5855c005be42a7"
+        ],
+        "ref": "refs/changes/10/10/1",
+        "revision": "c994ec517e4f809c8acf3b0c7f4d9f466b8069b1",
+        "sizeDeletions": 0,
+        "sizeInsertions": 0,
+        "uploader": {
+            "email": "nope@example.com",
+            "name": "peter law",
+            "username": "peter"
+        }
+    },
+    "type": "patchset-created",
+    "uploader": {
+        "email": "nope@example.com",
+        "name": "peter law",
+        "username": "peter"
+    }
+}

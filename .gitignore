@@ -1,6 +1,12 @@
 # Local config file
 /local.ini
 
+# Live database
+/sqlite.db
+
+# Testing database
+/test/test.db
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

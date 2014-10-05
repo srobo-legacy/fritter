@@ -89,7 +89,7 @@ def event_handler(event):
     if errors_map:
         verified = -1
 
-    patch_set = PatchSet(change['project'], change['branch'], change['id'], revision)
+    patch_set = PatchSet(change['project'], revision)
     feedback.set_review(patch_set, preview, verified)
 
 listener = GerritThread(config, event_handler)

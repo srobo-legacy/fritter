@@ -5,7 +5,7 @@ import logging
 import paramiko
 import pipes
 
-PatchSet = namedtuple('PatchSet', ['project', 'branch', 'change_id', 'revision'])
+PatchSet = namedtuple('PatchSet', ['project', 'revision'])
 
 CONFIG_SECTION = 'GerritServer'
 

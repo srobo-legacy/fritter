@@ -46,7 +46,8 @@ class FritterService(object):
 
         feedback = GerritSSH(config)
 
-        db_connector = partial(sqlite3.connect, config.get('fritter', 'sqlite_db'))
+        db_path = config.get('fritter', 'sqlite_db')
+        db_connector = partial(sqlite3.connect, db_path)
 
         mailer_config = dict(config.items('mailer'))
         mailer = Mailer(mailer_config, db_connector, loader.load)

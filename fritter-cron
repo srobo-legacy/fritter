@@ -1,26 +1,16 @@
 #!/usr/bin/env python
 
-try:
-    # python 2
-    import ConfigParser as configparser
-except ImportError:
-    # python 3
-    import configparser
-
 import logging
-import os
+import os.path
 import sys
 
+from fritter.config import load_config
 from fritter.fritter_service import FritterService
 from fritter.libfritter.libfritter.sqlitewrapper import PendingSend
 
 logging.basicConfig(level=logging.INFO, stream=sys.stdout)
 
-baseDir = os.path.dirname(__file__)
-
-config = configparser.SafeConfigParser()
-config.readfp(open(os.path.join(baseDir, 'config.ini')))
-config.read([os.path.join(baseDir, 'local.ini')])
+config = load_config(os.path.dirname(__file__))
 
 mailer, db_connector = FritterService.create_mailer(config)
 

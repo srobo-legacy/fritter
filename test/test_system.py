@@ -74,13 +74,13 @@ def mock_ssh(mock_exec_command):
                                       key_filename = 'test-priv-key',
                                       timeout = 5)
 
-def test_submit():
+def do_submit(event_file):
     config = load_config()
     with get_mock_srusers() as mock_srusers:
         mock_srusers.group = get_mock_group_ctor(in_db = True)
         service = FritterService.create(config)
 
-        event = load_event('submit.json')
+        event = load_event(event_file)
         patchset = FritterService.create_patchset(event)
 
         mock_out = mock.Mock()
@@ -92,11 +92,24 @@ def test_submit():
 
     assert mock_exec_command.called, "Should have emitted a review at Gerrit"
     command = mock_exec_command.call_args[0][0]
+    return command
+
+def test_submit():
+    command = do_submit('submit.json')
     assert command.startswith('gerrit review'), "Wrong command ran against Gerrit"
     assert 'testing-repo' in command, "Doesn't mention right project"
     assert 'nice-ship.txt' in command, "Doesn't mention right file"
     assert 'An example template' in command, "Doesn't contain the subject"
     assert 'We like your ship' in command, "Doesn't contain the body"
+
+def test_submit_bad():
+    command = do_submit('submit-bad-fields.json')
+    assert command.startswith('gerrit review'), "Wrong command ran against Gerrit"
+    assert '$INVALID_BACON' in command, "Doesn't mention the bad placeholder"
+    assert 'Error' in command, "Doesn't indicate an error"
+    assert 'testing-repo' in command, "Doesn't mention right project"
+    assert 'bad-fields.txt' in command, "Doesn't mention right file"
+    assert 'Bad fields' in command, "Doesn't contain the subject"
 
 @with_setup(clear_db)
 def test_merged():

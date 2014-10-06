@@ -18,7 +18,7 @@ from .libfritter.libfritter.previewer import Previewer
 from .git import GitRepository
 from .gerrit_ssh import GerritSSH, PatchSet
 from .group_mailer import GroupMailer
-from .ldap_connector import LDAPGroupConnector
+from .ldap_connector import LDAPGroupConnector, User
 from .repo_template_loader import RepoTemplateLoader
 from .template_lister import TemplateLister
 
@@ -63,7 +63,8 @@ class FritterService(object):
         mailer, ldap_connector, repo, loader, db_connector = cls._create_core(config)
 
         target_project = config.get('fritter', 'project_name')
-        previewer = Previewer(loader.load, ldap_connector.describe, None)
+        previewer = Previewer(loader.load, ldap_connector.describe, None,
+                              valid_placeholders = User._fields)
 
         feedback = GerritSSH(config)
 

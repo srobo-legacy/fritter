@@ -3,12 +3,12 @@ from fritter.fritter_service import FritterService
 from fritter.gerrit_ssh import PatchSet
 from fritter.repo_template_loader import RepoTemplateLoader
 
-class FakeRepo(object):
+class FakeLister(object):
     def __init__(self, files_added):
         self._files_added = files_added
         self.revision = None
 
-    def files_added(self, revision):
+    def get_files(self, revision):
         self.revision = revision
         return self._files_added
 
@@ -39,7 +39,7 @@ class FakeMailer(object):
         self.template_name = template_name
 
 def get_service(project, files_added = [], preview = ''):
-    repo = FakeRepo(files_added)
+    repo = FakeLister(files_added)
     previewer = FakePreviewer(preview)
     feedback = FakeFeedback()
     mailer = FakeMailer()

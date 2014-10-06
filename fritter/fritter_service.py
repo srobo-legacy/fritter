@@ -20,6 +20,7 @@ from .gerrit_ssh import GerritSSH, PatchSet
 from .group_mailer import GroupMailer
 from .ldap_connector import LDAPGroupConnector
 from .repo_template_loader import RepoTemplateLoader
+from .template_lister import TemplateLister
 
 @contextmanager
 def close_on_exit(item):
@@ -68,13 +69,15 @@ class FritterService(object):
 
         group_mailer = GroupMailer(mailer.email_template, ldap_connector.get_users, loader.load)
 
-        service = cls(target_project, repo, previewer, feedback, group_mailer)
+        lister = TemplateLister(repo, config.get('fritter', 'template_filter'))
+
+        service = cls(target_project, lister, previewer, feedback, group_mailer)
 
         return service
 
-    def __init__(self, project_name, repo, previewer, feedback_handler, mailer):
+    def __init__(self, project_name, lister, previewer, feedback_handler, mailer):
         self._project = project_name
-        self._repo = repo
+        self._lister = lister
         self._previewer = previewer
         self._feedback = feedback_handler
         self._mailer = mailer
@@ -106,9 +109,7 @@ class FritterService(object):
                                    kind, patchset)
 
     def _get_added_templates(self, patchset):
-        added_files = self._repo.files_added(patchset.revision)
-        added_templates = [f for f in added_files if f.endswith('.txt')]
-        return added_templates
+        return self._lister.get_files(patchset.revision)
 
     def patchset_created(self, patchset):
         added_templates = self._get_added_templates(patchset)

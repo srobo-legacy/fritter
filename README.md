@@ -22,3 +22,6 @@ within an LDAP database, and then queued for sending.
 ## Configuration
 See `config.ini` for the defaults and explanations. All the various scripts
 also load a `local.ini` which can override any of the values.
+
+Note that due to the way that srusers works, its LDAP connection unfortunately
+needs to be configured separate via config files within its own repo.

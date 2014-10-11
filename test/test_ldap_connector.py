@@ -29,7 +29,7 @@ def test_valid_group_missing():
         threw = False
         group_name = 'my-missing-group'
         try:
-            c = LDAPGroupConnector([group_name])
+            LDAPGroupConnector([group_name])
         except UnknownGroup as ug:
             msg = ug.message
             assert group_name in msg, "Should include the group name in the message"
@@ -41,7 +41,7 @@ def test_valid_group():
     with get_mock_srusers() as mock_srusers:
         mock_srusers.group = get_mock_group_ctor(in_db = True)
 
-        c = LDAPGroupConnector(['found'])
+        LDAPGroupConnector(['found'])
 
 def test_describe_invalid_group():
     with get_mock_srusers() as mock_srusers:
@@ -81,7 +81,7 @@ def test_describe_valid_group_no_description():
         actual = c.describe(name)
         assert name == actual, "Should fall back to the name if the description is empty"
 
-def test_emails_empty_group():
+def test_get_users_empty_group():
     with get_mock_srusers() as mock_srusers:
         mock_srusers.group = get_mock_group_ctor(in_db = True)
 
@@ -91,7 +91,7 @@ def test_emails_empty_group():
         actual = c.get_users(name)
         assert [] == actual, "Should return empty list for empty group"
 
-def test_describe_valid_group_no_description():
+def test_get_users():
     with get_mock_srusers() as mock_srusers:
         member_name = 'my-member-uid'
         mock_srusers.group = get_mock_group_ctor(in_db = True, members = [member_name])

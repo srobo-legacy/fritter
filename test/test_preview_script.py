@@ -1,8 +1,27 @@
 
-import os.path
+import os
+import shutil
 from subprocess import CalledProcessError, check_output, STDOUT
 
 from tests_helpers import root, test_data
+from test_system import load_config
+
+local_ini_path = os.path.join(root(), 'local.ini')
+local_ini_bak_path = local_ini_path + '.bak-during-test'
+
+def setUp():
+    global local_ini_path, local_ini_bak_path
+    if os.path.exists(local_ini_path):
+        shutil.move(local_ini_path, local_ini_bak_path)
+    config = load_config()
+    with open(local_ini_path, 'w') as lf:
+        config.write(lf)
+
+def tearDown():
+    global local_ini_path, local_ini_bak_path
+    os.remove(local_ini_path)
+    if os.path.exists(local_ini_bak_path):
+        shutil.move(local_ini_bak_path, local_ini_path)
 
 def get_preview(revision):
     script = os.path.join(root(), 'preview')

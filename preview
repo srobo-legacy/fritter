@@ -2,14 +2,18 @@
 
 from __future__ import print_function
 
+import argparse
 import os.path
 import sys
 
-if len(sys.argv) != 3:
-    exit("Usage {0} REPO REVISION".format(sys.argv[0]))
-
-REPO_ROOT = sys.argv[1]
-REVISION = sys.argv[2]
+parser = argparse.ArgumentParser()
+parser.add_argument("repo",
+                    help="The repository within which the target revision exists.")
+parser.add_argument("revision",
+                    help="The revision to preview.")
+args = parser.parse_args()
+REPO_ROOT = args.repo
+REVISION = args.revision
 
 if not os.path.exists(REPO_ROOT):
     exit("Specified repository doesn't exist")

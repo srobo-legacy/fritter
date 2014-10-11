@@ -50,6 +50,19 @@ class FritterService(object):
 
         return mailer, ldap_connector, repo, loader, db_connector
 
+    @staticmethod
+    def _create_previewer(loader, ldap_connector, writer):
+        "Create a previewer instance."
+        previewer = Previewer(loader.load, ldap_connector.describe, writer,
+                              valid_placeholders = User._fields)
+        return previewer
+
+    @staticmethod
+    def _create_lister(config, repo):
+        "Create a lister instance."
+        lister = TemplateLister(repo, config.get('fritter', 'template_filter'))
+        return lister
+
     @classmethod
     def create_mailer(cls, config):
         "Create a new mailer instance for use in just sending the emails."
@@ -57,21 +70,28 @@ class FritterService(object):
         return mailer, db_connector
 
     @classmethod
+    def create_previewer(cls, config, writer):
+        "Create a previewer instance."
+        _, ldap_connector, repo, loader, _ = cls._create_core(config)
+        previewer = cls._create_previewer(loader, ldap_connector, writer)
+        lister = cls._create_lister(config, repo)
+        return previewer, lister
+
+    @classmethod
     def create(cls, config):
         "Create a new instance of the service around the given config."
 
         mailer, ldap_connector, repo, loader, db_connector = cls._create_core(config)
 
-        target_project = config.get('fritter', 'project_name')
-        previewer = Previewer(loader.load, ldap_connector.describe, None,
-                              valid_placeholders = User._fields)
+        previewer = cls._create_previewer(loader, ldap_connector, None)
 
         feedback = GerritSSH(config)
 
         group_mailer = GroupMailer(mailer.email_template, ldap_connector.get_users, loader.load)
 
-        lister = TemplateLister(repo, config.get('fritter', 'template_filter'))
+        lister = cls._create_lister(config, repo)
 
+        target_project = config.get('fritter', 'project_name')
         service = cls(target_project, lister, previewer, feedback, group_mailer)
 
         return service

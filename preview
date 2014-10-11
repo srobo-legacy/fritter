@@ -2,7 +2,7 @@
 
 from __future__ import print_function
 
-import os
+import os.path
 import sys
 
 if len(sys.argv) != 3:
@@ -14,19 +14,19 @@ REVISION = sys.argv[2]
 if not os.path.exists(REPO_ROOT):
     exit("Specified repository doesn't exist")
 
-from fritter.git import GitRepository
+from fritter.config import load_config
+from fritter.fritter_service import FritterService
 from fritter.repo_template_loader import RepoTemplateLoader
-from fritter.libfritter.libfritter.previewer import Previewer
 
-repo = GitRepository(REPO_ROOT)
-loader = RepoTemplateLoader(repo)
-previewer = Previewer(loader.load, sys.stdout)
+config = load_config(os.path.dirname(__file__))
+config.set('fritter', 'project_path', REPO_ROOT)
+previewer, lister = FritterService.create_previewer(config, sys.stdout)
 
-added_files = repo.files_added(REVISION)
+files = lister.get_files(REVISION)
 
-for file_path in added_files:
-    if not file_path.endswith('.txt'):
-        continue
+for file_path in files:
+    print()
     print('-' * 10, file_path, '-' * 10)
+    print()
     template_name = RepoTemplateLoader.template_name(file_path, REVISION)
     previewer.preview(template_name)

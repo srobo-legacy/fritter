@@ -1,7 +1,8 @@
 
 import mock
 
-from fritter.ldap_connector import LDAPGroupConnector, InvalidGroup, UnknownGroup, User
+from fritter.libfritter.libfritter.recipient_checker import InvalidRecipient
+from fritter.ldap_connector import LDAPGroupConnector, UnknownGroup, User
 
 def get_mock_srusers():
     return mock.patch('fritter.ldap_connector.srusers')
@@ -53,7 +54,7 @@ def test_describe_invalid_group():
         group_name = 'other'
         try:
             c.describe(group_name)
-        except InvalidGroup as ig:
+        except InvalidRecipient as ig:
             msg = ig.message
             assert group_name in msg, "Should include the group name in the message"
             threw = True

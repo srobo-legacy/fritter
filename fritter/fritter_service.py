@@ -53,7 +53,7 @@ class FritterService(object):
     @staticmethod
     def _create_previewer(loader, ldap_connector, writer):
         "Create a previewer instance."
-        previewer = Previewer(loader.load, ldap_connector.describe, writer,
+        previewer = Previewer(loader.load, ldap_connector, writer,
                               valid_placeholders = User._fields)
         return previewer
 

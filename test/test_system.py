@@ -102,7 +102,7 @@ def test_submit():
     assert 'An example template' in command, "Doesn't contain the subject"
     assert 'We like your ship' in command, "Doesn't contain the body"
 
-def test_submit_bad():
+def test_submit_bad_fields():
     command = do_submit('submit-bad-fields.json')
     assert command.startswith('gerrit review'), "Wrong command ran against Gerrit"
     assert '$INVALID_BACON' in command, "Doesn't mention the bad placeholder"
@@ -110,6 +110,15 @@ def test_submit_bad():
     assert 'testing-repo' in command, "Doesn't mention right project"
     assert 'bad-fields.txt' in command, "Doesn't mention right file"
     assert 'Bad fields' in command, "Doesn't contain the subject"
+
+def test_submit_no_to():
+    command = do_submit('submit-no-to.json')
+    assert command.startswith('gerrit review'), "Wrong command ran against Gerrit"
+    assert 'No recipients specified' in command, "Doesn't explain the error"
+    assert 'Error' in command, "Doesn't indicate an error"
+    assert 'testing-repo' in command, "Doesn't mention right project"
+    assert 'no-to.txt' in command, "Doesn't mention right file"
+    assert 'To no-one' in command, "Doesn't contain the subject"
 
 @with_setup(clear_db)
 def test_merged():

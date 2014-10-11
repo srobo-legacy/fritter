@@ -15,6 +15,7 @@ except ImportError:
 
 from .libfritter.libfritter.mailer import Mailer
 from .libfritter.libfritter.previewer import Previewer
+from .libfritter.libfritter.recipient_checker import RestrictedRecipientsChecker
 from .git import GitRepository
 from .gerrit_ssh import GerritSSH, PatchSet
 from .group_mailer import GroupMailer
@@ -34,10 +35,12 @@ class FritterService(object):
         return PatchSet(event['change']['project'], event['patchSet']['revision'])
 
     @staticmethod
-    def _create_core(config):
+    def get_valid_groups(config):
+        valid_groups = [g.strip() for g in config.get('recipients', 'valid-groups').split(',')]
+        return valid_groups
 
-        valid_groups = [g.strip() for g in config.get('ldap', 'valid-groups').split(',')]
-        ldap_connector = LDAPGroupConnector(valid_groups)
+    @classmethod
+    def _create_core(cls, config):
 
         repo = GitRepository(config.get('fritter', 'project_path'))
         loader = RepoTemplateLoader(repo)
@@ -48,12 +51,12 @@ class FritterService(object):
         mailer_config = dict(config.items('mailer'))
         mailer = Mailer(mailer_config, db_connector, loader.load)
 
-        return mailer, ldap_connector, repo, loader, db_connector
+        return mailer, repo, loader, db_connector
 
     @staticmethod
-    def _create_previewer(loader, ldap_connector, writer):
+    def _create_previewer(loader, recipient_checker, writer):
         "Create a previewer instance."
-        previewer = Previewer(loader.load, ldap_connector, writer,
+        previewer = Previewer(loader.load, recipient_checker, writer,
                               valid_placeholders = User._fields)
         return previewer
 
@@ -66,14 +69,16 @@ class FritterService(object):
     @classmethod
     def create_mailer(cls, config):
         "Create a new mailer instance for use in just sending the emails."
-        mailer, _, _, _, db_connector = cls._create_core(config)
+        mailer, _, _, db_connector = cls._create_core(config)
         return mailer, db_connector
 
     @classmethod
     def create_previewer(cls, config, writer):
         "Create a previewer instance."
-        _, ldap_connector, repo, loader, _ = cls._create_core(config)
-        previewer = cls._create_previewer(loader, ldap_connector, writer)
+        _, repo, loader, _ = cls._create_core(config)
+        valid_groups = cls.get_valid_groups(config)
+        recipient_checker = RestrictedRecipientsChecker(valid_groups)
+        previewer = cls._create_previewer(loader, recipient_checker, writer)
         lister = cls._create_lister(config, repo)
         return previewer, lister
 
@@ -81,7 +86,10 @@ class FritterService(object):
     def create(cls, config):
         "Create a new instance of the service around the given config."
 
-        mailer, ldap_connector, repo, loader, db_connector = cls._create_core(config)
+        mailer, repo, loader, db_connector = cls._create_core(config)
+
+        valid_groups = cls.get_valid_groups(config)
+        ldap_connector = LDAPGroupConnector(valid_groups)
 
         previewer = cls._create_previewer(loader, ldap_connector, None)
 

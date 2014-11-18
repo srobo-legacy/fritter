@@ -15,9 +15,10 @@ config = load_config(os.path.dirname(__file__))
 fritter = FritterService.create(config)
 
 listener = GerritThread(config, fritter.event_handler)
+listener.daemon = daemon = sys.stdin.isatty()
 listener.start()
 
-while sys.stdin.isatty():
+while daemon:
     try:
         line = sys.stdin.readline()
     except KeyboardInterrupt:

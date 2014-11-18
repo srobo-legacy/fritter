@@ -17,7 +17,7 @@ fritter = FritterService.create(config)
 listener = GerritThread(config, fritter.event_handler)
 listener.start()
 
-while True:
+while sys.stdin.isatty():
     try:
         line = sys.stdin.readline()
     except KeyboardInterrupt:

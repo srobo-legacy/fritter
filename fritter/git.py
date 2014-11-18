@@ -23,12 +23,10 @@ class GitRepository(object):
         return _git(self._path, list(args))
 
     def files_added(self, ref):
-        out = self._git('show', '--name-status', '--format=format:', ref)
+        out = self._git('diff-tree', '--name-status', '--no-commit-id', '-r', ref)
         lines = out.splitlines()
         added = []
         for line in lines:
-            if not line.strip():
-                continue
             kind, path = line.split()
             if kind == 'A':
                 added.append(path)

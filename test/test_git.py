@@ -26,9 +26,12 @@ def test_files_added():
     repo = build_repo('files_added')
 
     added = repo.files_added('HEAD')
-    assert ['another'] == added
+    assert ['mydir/in-mydir'] == added
 
     added = repo.files_added('HEAD^')
+    assert ['another'] == added
+
+    added = repo.files_added('HEAD^^')
     # don't care about ordering
     assert set(['foo', 'bar']) == set(added)
 
@@ -39,8 +42,8 @@ def test_file_content():
         actual = repo.file_content(name, ref)
         assert expected == actual, "Wrong content in '{0}'.".format(name)
 
-    yield helper, 'bar', 'HEAD', BACON_PONY_LINE
-    yield helper, 'bar', 'HEAD^', ''
+    yield helper, 'bar', 'HEAD^', BACON_PONY_LINE
+    yield helper, 'bar', 'HEAD^^', ''
 
 def test_file_not_present():
     repo = build_repo('file_not_present')
@@ -78,6 +81,9 @@ def build_repo(name):
     def rm(name):
         os.remove(os.path.join(repo_path, name))
 
+    def mkdir(name):
+        os.mkdir(os.path.join(repo_path, name))
+
     def commit_all(msg):
         run('git add -A . && git commit -m "{0}"'.format(msg))
 
@@ -103,6 +109,13 @@ def build_repo(name):
     touch(another)
 
     commit_all('Third')
+
+    mydir = "mydir"
+    mkdir(mydir)
+    in_mydir = os.path.join(mydir, 'in-mydir')
+    touch(in_mydir)
+
+    commit_all('Fourth')
 
     repo = GitRepository(repo_path)
     return repo

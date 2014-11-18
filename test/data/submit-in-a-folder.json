@@ -1,0 +1,45 @@
+{
+    "change": {
+        "branch": "master",
+        "commitMessage": "Add an email in a folder.\n\nChange-Id: I8d50cacfb78a93c87736faa49e290f937c2353c6\n",
+        "id": "I8d50cacfb78a93c87736faa49e290f937c2353c6",
+        "number": "20",
+        "owner": {
+            "email": "nope@example.com",
+            "name": "peter law",
+            "username": "peter"
+        },
+        "project": "testing-repo",
+        "status": "NEW",
+        "subject": "Add an email in a folder.",
+        "url": "https://localhost/gerrit/20"
+    },
+    "patchSet": {
+        "author": {
+            "email": "nope@example.com",
+            "name": "Peter Law",
+            "username": ""
+        },
+        "createdOn": 1416346128,
+        "isDraft": false,
+        "number": "1",
+        "parents": [
+            "159c3807c667e81f2a37fe0cdb0c26f009893287"
+        ],
+        "ref": "refs/changes/20/20/1",
+        "revision": "eff13770779fad83f41d3d92e994f47aa31abe71",
+        "sizeDeletions": 0,
+        "sizeInsertions": 0,
+        "uploader": {
+            "email": "nope@example.com",
+            "name": "peter law",
+            "username": "peter"
+        }
+    },
+    "type": "patchset-created",
+    "uploader": {
+        "email": "nope@example.com",
+        "name": "peter law",
+        "username": "peter"
+    }
+}

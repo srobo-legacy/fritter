@@ -120,6 +120,14 @@ def test_submit_no_to():
     assert 'no-to.txt' in command, "Doesn't mention right file"
     assert 'To no-one' in command, "Doesn't contain the subject"
 
+def test_submit_in_a_folder():
+    command = do_submit('submit-in-a-folder.json')
+    assert command.startswith('gerrit review'), "Wrong command ran against Gerrit"
+    assert 'testing-repo' in command, "Doesn't mention right project"
+    assert 'a-folder/in-a-folder.txt' in command, "Doesn't mention right file"
+    assert 'In a folder.' in command, "Doesn't contain the subject"
+    assert "I am on a boat." in command, "Doesn't contain the body"
+
 @with_setup(clear_db)
 def test_merged():
     config = load_config()

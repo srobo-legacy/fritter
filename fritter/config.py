@@ -6,6 +6,7 @@ except ImportError:
     # python 3
     import configparser
 
+import logging
 from os.path import join
 
 def load_config(base_dir):
@@ -19,8 +20,18 @@ def load_config(base_dir):
         The directory to look for the config files in.
     """
 
+    logger = logging.getLogger('fritter.config')
+
     config = configparser.SafeConfigParser()
-    config.readfp(open(join(base_dir, 'config.ini')))
-    config.read([join(base_dir, 'local.ini')])
+
+    main_config = join(base_dir, 'config.ini')
+    logger.info("Loading base config data from '%s'.", main_config)
+    config.readfp(open(main_config))
+    logger.info("Successfully loaded base config data from '%s'.", main_config)
+
+    local_config = join(base_dir, 'local.ini')
+    logger.info("Loading local config data from '%s'.", local_config)
+    success = config.read([local_config])
+    logger.info("Successfully read local config data from '%s'.", "', '".join(success))
 
     return config

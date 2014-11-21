@@ -107,3 +107,19 @@ def test_get_users():
         expected = [User(first, last, email)]
         assert expected == actual, "Should return a list of emails"
         mock_srusers.user.assert_called_once_with(member_name)
+
+def test_user_no_email():
+    with get_mock_srusers() as mock_srusers:
+        member_name = 'my-member-uid'
+        mock_srusers.group = get_mock_group_ctor(in_db = True, members = [member_name])
+        first, last = 'fff', 'lll'
+        email = None
+        mock_srusers.user = get_mock_user_ctor(first, last, email)
+
+        name = 'valid'
+        c = LDAPGroupConnector([name])
+
+        actual = c.get_users(name)
+        expected = []
+        assert expected == actual, "Should return a list of valid emails"
+        mock_srusers.user.assert_called_once_with(member_name)

@@ -1,5 +1,6 @@
 
 from collections import namedtuple
+import logging
 
 from . import srusers
 from .libfritter.libfritter.recipient_checker import RestrictedRecipientsChecker
@@ -26,10 +27,12 @@ class LDAPGroupConnector(RestrictedRecipientsChecker):
             information about. Will raise ``UnknownGroup`` for any which
             don't exist in the underlying database.
         """
+        self._logger = logging.getLogger('fritter.ldap_connector')
         map(self._get_group, valid_groups)
         super(LDAPGroupConnector, self).__init__(valid_groups)
 
     def _get_group(self, group_name):
+        self._logger.debug("Getting group '%s'.", group_name)
         g = srusers.group(group_name)
         if not g.in_db:
             raise UnknownGroup(group_name)
@@ -46,6 +49,10 @@ class LDAPGroupConnector(RestrictedRecipientsChecker):
         users = []
         for uid in g.members:
             u = srusers.user(uid)
+            if not u.email:
+                self._logger.warn("Skipping user '%s' due to missing email", uid)
+                continue
             user = User(u.cname, u.sname, u.email)
             users.append(user)
+        self._logger.debug("Got %d useable members of group '%s'.", len(users), group_name)
         return users

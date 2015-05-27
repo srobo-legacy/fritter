@@ -3,16 +3,15 @@ from collections import namedtuple
 import logging
 
 from . import srusers
+from .libfritter.libfritter.previewer import BadRecipient
 from .libfritter.libfritter.recipient_checker import RestrictedRecipientsChecker
 
-class UnknownGroup(Exception):
+class UnknownGroup(BadRecipient):
     """An exception to raise when we are asked about a group that isn't
     in the database.
     """
     def __init__(self, group_name):
-        super(UnknownGroup, self).__init__(
-            "Unknown group '{0}'.".format(group_name)
-        )
+        super(UnknownGroup, self).__init__(group_name, "Unknown group '{0}'.")
 
 User = namedtuple('User', ['first_name', 'last_name', 'email'])
 

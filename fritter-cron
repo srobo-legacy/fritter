@@ -8,7 +8,7 @@ from fritter.config import load_config
 from fritter.fritter_service import FritterService
 from fritter.libfritter.libfritter.sqlitewrapper import PendingSend
 
-logging.basicConfig(level=logging.INFO, stream=sys.stdout)
+logging.basicConfig(level=logging.WARN, stream=sys.stdout)
 
 config = load_config(os.path.dirname(__file__))
 
